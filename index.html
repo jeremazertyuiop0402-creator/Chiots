@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Appel des Chiots</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Nunito',sans-serif;-webkit-tap-highlight-color:transparent;}
+html,body{background:#0f0f1a;height:100%;width:100%;overflow:hidden;}
+.screen{display:none;position:fixed;inset:0;flex-direction:column;align-items:center;}
+.screen.active{display:flex;}
+.paw-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.paw-float{position:absolute;opacity:0.06;animation:floatPaw 8s ease-in-out infinite;}
+@keyframes floatPaw{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+@keyframes bouncePaw{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes popIn{0%{transform:scale(0.7);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes ripple{0%{transform:scale(1);opacity:0.4}100%{transform:scale(3.5);opacity:0}}
+@keyframes pulseGreen{0%,100%{box-shadow:0 8px 24px rgba(34,197,94,0.4)}50%{box-shadow:0 8px 48px rgba(34,197,94,0.9)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+@keyframes typingDot{0%,100%{transform:translateY(0);opacity:0.5}50%{transform:translateY(-6px);opacity:1}}
+@keyframes micPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 0 20px rgba(239,68,68,0)}}
+
+/* SELECTION */
+#screen-select{background:linear-gradient(160deg,#1a1a2e,#16213e,#0f3460);overflow-y:auto;justify-content:flex-start;padding:28px 16px 36px;}
+.title-wrap{position:relative;z-index:1;text-align:center;margin-bottom:24px;}
+.title-paws{font-size:2.6rem;display:flex;justify-content:center;gap:6px;margin-bottom:6px;}
+.title-paws span{display:inline-block;}
+.title-paws span:nth-child(1){animation:bouncePaw 1.2s 0s ease-in-out infinite}
+.title-paws span:nth-child(2){animation:bouncePaw 1.2s 0.15s ease-in-out infinite}
+.title-paws span:nth-child(3){animation:bouncePaw 1.2s 0.3s ease-in-out infinite}
+h1{font-family:'Fredoka One',cursive;font-size:2rem;color:#fff;letter-spacing:1px;}
+.subtitle{color:rgba(255,255,255,0.5);font-size:0.9rem;font-weight:700;margin-top:4px;}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;width:100%;max-width:380px;position:relative;z-index:1;}
+.dog-card{background:rgba(255,255,255,0.05);border-radius:24px;padding:18px 10px;cursor:pointer;text-align:center;transition:transform 0.15s;backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,0.08);color:#fff;outline:none;}
+.dog-card:active{transform:scale(0.93);}
+.dog-avatar{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:2.2rem;border:3px solid rgba(255,255,255,0.25);}
+.dog-name{font-family:'Fredoka One',cursive;font-size:1.25rem;}
+.dog-role{font-size:0.7rem;color:rgba(255,255,255,0.45);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+
+/* APPEL ENTRANT */
+#screen-incoming{justify-content:space-between;padding:70px 24px 70px;}
+.inc-bg{position:absolute;inset:0;}
+.inc-top{position:relative;z-index:2;text-align:center;}
+.inc-label{color:rgba(255,255,255,0.55);font-weight:700;font-size:0.85rem;text-transform:uppercase;letter-spacing:3px;margin-bottom:8px;}
+.inc-name{font-family:'Fredoka One',cursive;font-size:2.8rem;color:#fff;}
+.inc-paws{display:flex;justify-content:center;gap:10px;margin-top:10px;font-size:1.5rem;}
+.inc-paws span:nth-child(1){animation:bouncePaw 1s 0s ease-in-out infinite;display:inline-block}
+.inc-paws span:nth-child(2){animation:bouncePaw 1s 0.2s ease-in-out infinite;display:inline-block}
+.inc-paws span:nth-child(3){animation:bouncePaw 1s 0.4s ease-in-out infinite;display:inline-block}
+.ripple-wrap{position:relative;width:140px;height:140px;display:flex;align-items:center;justify-content:center;z-index:2;}
+.ripple-ring{position:absolute;width:120px;height:120px;border-radius:50%;opacity:0;}
+.ripple-ring:nth-child(1){animation:ripple 2s 0s ease-out infinite}
+.ripple-ring:nth-child(2){animation:ripple 2s 0.5s ease-out infinite}
+.ripple-ring:nth-child(3){animation:ripple 2s 1s ease-out infinite}
+.inc-avatar{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:3.8rem;border:4px solid rgba(255,255,255,0.35);position:relative;z-index:3;}
+.call-btns{display:flex;gap:60px;position:relative;z-index:2;}
+.btn-circle{width:76px;height:76px;border-radius:50%;border:none;font-size:2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.btn-decline{background:#ef4444;box-shadow:0 8px 24px rgba(239,68,68,0.5);}
+.btn-accept{background:#22c55e;animation:pulseGreen 1.5s ease-in-out infinite;}
+.btn-circle:active{transform:scale(0.88);}
+
+/* CONVERSATION */
+#screen-call{justify-content:flex-start;}
+.call-header{display:flex;align-items:center;gap:12px;width:100%;max-width:420px;padding:44px 20px 12px;position:relative;z-index:2;}
+.call-avatar-sm{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;border:2px solid rgba(255,255,255,0.3);flex-shrink:0;}
+.call-hname{font-family:'Fredoka One',cursive;font-size:1.35rem;color:#fff;}
+.call-status{font-size:0.78rem;color:#22c55e;font-weight:700;display:flex;align-items:center;gap:4px;margin-top:2px;}
+.status-dot{width:6px;height:6px;background:#22c55e;border-radius:50%;animation:blink 1s ease-in-out infinite;}
+.chat-area{flex:1;width:100%;max-width:420px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 18px 8px;position:relative;z-index:2;scrollbar-width:none;}
+.chat-area::-webkit-scrollbar{display:none;}
+.bubble{max-width:78%;padding:11px 15px;border-radius:20px;font-size:0.95rem;font-weight:700;line-height:1.4;animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.bubble-dog{align-self:flex-start;color:#fff;border-bottom-left-radius:4px;}
+.bubble-user{align-self:flex-end;background:rgba(255,255,255,0.12);color:#fff;border-bottom-right-radius:4px;}
+.typing-bubble{align-self:flex-start;border-radius:20px;border-bottom-left-radius:4px;padding:14px 18px;display:flex;gap:6px;align-items:center;animation:popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);}
+.typing-dot{width:8px;height:8px;background:rgba(255,255,255,0.8);border-radius:50%;}
+.typing-dot:nth-child(1){animation:typingDot 1.2s 0s ease-in-out infinite}
+.typing-dot:nth-child(2){animation:typingDot 1.2s 0.2s ease-in-out infinite}
+.typing-dot:nth-child(3){animation:typingDot 1.2s 0.4s ease-in-out infinite}
+
+.controls{display:flex;flex-direction:column;align-items:center;gap:12px;padding:8px 20px 36px;position:relative;z-index:2;width:100%;}
+
+/* BOUTON MICRO MAINTIEN */
+.mic-btn{
+  width:80px;height:80px;border-radius:50%;border:none;
+  font-size:2.2rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+  user-select:none;-webkit-user-select:none;
+  touch-action:none;
+}
+.mic-btn.idle{background:#444;box-shadow:0 4px 16px rgba(0,0,0,0.4);}
+.mic-btn.listening{background:#ef4444;animation:micPulse 1s ease-in-out infinite;box-shadow:0 4px 24px rgba(239,68,68,0.6);}
+.mic-btn.disabled{background:#222;opacity:0.4;}
+.mic-btn:active{transform:scale(0.92);}
+
+.mic-label{font-size:0.8rem;color:rgba(255,255,255,0.55);font-weight:700;text-align:center;}
+.mic-status{font-size:0.82rem;font-weight:800;text-align:center;min-height:22px;padding:0 16px;}
+
+.btn-hangup{background:#ef4444;border:none;color:#fff;padding:13px 36px;border-radius:50px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(239,68,68,0.5);}
+.btn-hangup:active{transform:scale(0.93);}
+</style>
+</head>
+<body>
+
+<div class="paw-bg" id="pawBg"></div>
+
+<!-- SELECTION -->
+<div class="screen active" id="screen-select">
+  <div class="title-wrap">
+    <div class="title-paws"><span>🐾</span><span>🐾</span><span>🐾</span></div>
+    <h1>Appel des Chiots</h1>
+    <p class="subtitle">Qui veux-tu appeler ?</p>
+  </div>
+  <div class="grid" id="dogGrid"></div>
+</div>
+
+<!-- APPEL ENTRANT -->
+<div class="screen" id="screen-incoming">
+  <div class="inc-bg" id="incBg"></div>
+  <div class="inc-top">
+    <div class="inc-label">Appel entrant...</div>
+    <div class="inc-name" id="incName">Chase</div>
+    <div class="inc-paws"><span>🐾</span><span>🐾</span><span>🐾</span></div>
+  </div>
+  <div class="ripple-wrap">
+    <div class="ripple-ring" id="ripple1"></div>
+    <div class="ripple-ring" id="ripple2"></div>
+    <div class="ripple-ring" id="ripple3"></div>
+    <div class="inc-avatar" id="incAvatar">🐕</div>
+  </div>
+  <div class="call-btns">
+    <button class="btn-circle btn-decline" onclick="declineCall()">📵</button>
+    <button class="btn-circle btn-accept" onclick="acceptCall()">📞</button>
+  </div>
+</div>
+
+<!-- CONVERSATION -->
+<div class="screen" id="screen-call">
+  <div class="call-header">
+    <div class="call-avatar-sm" id="callAvatarSm">🐕</div>
+    <div>
+      <div class="call-hname" id="callName">Chase</div>
+      <div class="call-status"><div class="status-dot"></div> En communication</div>
+    </div>
+  </div>
+  <div class="chat-area" id="chatArea"></div>
+  <div class="controls">
+    <div class="mic-status" id="micStatus" style="color:rgba(255,255,255,0.6)">Le chiot arrive...</div>
+    <button class="mic-btn idle" id="micBtn"
+      ontouchstart="startMic(event)" ontouchend="stopMic(event)"
+      onmousedown="startMic(event)" onmouseup="stopMic(event)"
+      onmouseleave="stopMic(event)">🎙️</button>
+    <div class="mic-label" id="micLabel">Maintiens pour parler</div>
+    <button class="btn-hangup" id="hangupBtn" onclick="hangup()">📵 Raccrocher</button>
+  </div>
+</div>
+
+<script>
+// ── Données personnages ──────────────────────────────────────────────────────
+const DOGS = {
+  chase:   {name:"Chase",   emoji:"🐕",color:"#2563eb",role:"Police",   pitch:1.3, rate:1.1, system:`Tu es Chase, chiot policier courageux. Tu parles à une petite fille de 4 ans prénommée "ma chérie". Réponds TOUJOURS en français, 1-2 courtes phrases. Utilise parfois "Wouf !" Parle de ta voiture de patrouille. Sois chaleureux et amusant.`},
+  stella:  {name:"Stella",  emoji:"🦮",color:"#ec4899",role:"Aérienne", pitch:1.75,rate:1.05,system:`Tu es Stella, chienne rose qui vole. Tu parles à une petite fille de 4 ans. Réponds TOUJOURS en français, 1-2 courtes phrases. Utilise parfois "Wouf !" Parle du ciel. Sois très douce et joyeuse.`},
+  ruben:   {name:"Ruben",   emoji:"🐩",color:"#16a34a",role:"Recyclage",pitch:1.15,rate:1.2, system:`Tu es Ruben, chiot rigolo qui recycle. Tu parles à une petite fille de 4 ans. Réponds TOUJOURS en français, 1-2 courtes phrases. Utilise "Wouf !" et "Pas de gaspillage !". Sois amusant.`},
+  everest: {name:"Everest", emoji:"🐺",color:"#7c3aed",role:"Neige",    pitch:1.45,rate:0.95,system:`Tu es Everest, chienne husky de montagne. Tu parles à une petite fille de 4 ans. Réponds TOUJOURS en français, 1-2 courtes phrases. Utilise "Wouf !" Parle de la neige. Sois calme et douce.`},
+  rocky:   {name:"Rocky",   emoji:"🐶",color:"#ea580c",role:"Mécanique",pitch:1.2, rate:1.15,system:`Tu es Rocky, chiot inventeur. Tu parles à une petite fille de 4 ans. Réponds TOUJOURS en français, 1-2 courtes phrases. Utilise "Wouf !" et "Je peux réparer ça !". Sois malin.`},
+  zuma:    {name:"Zuma",    emoji:"🌊",color:"#0891b2",role:"Marine",   pitch:1.5, rate:1.2, system:`Tu es Zuma, chiot qui adore l'eau. Tu parles à une petite fille de 4 ans. Réponds TOUJOURS en français, 1-2 courtes phrases. Utilise "Wouf !" et "Ça déchire !". Sois très joyeux.`}
+};
+
+// ── État global ──────────────────────────────────────────────────────────────
+let currentDog = null;
+let history    = [];
+let isSpeaking = false;   // le chiot est en train de parler → micro bloqué
+let isBusy     = false;   // l'IA réfléchit → micro bloqué
+let recognition = null;
+let ringtoneInterval = null, audioCtx = null;
+
+// APIs disponibles
+const synth = (typeof speechSynthesis !== 'undefined') ? speechSynthesis : null;
+const SR    = (typeof SpeechRecognition !== 'undefined') ? SpeechRecognition
+            : (typeof webkitSpeechRecognition !== 'undefined') ? webkitSpeechRecognition
+            : null;
+
+// ── Fond pattes ──────────────────────────────────────────────────────────────
+(function(){
+  const bg = document.getElementById('pawBg');
+  for(let i=0;i<16;i++){
+    const d = document.createElement('div');
+    d.className='paw-float'; d.textContent='🐾';
+    d.style.left   = Math.random()*100+'%';
+    d.style.top    = Math.random()*100+'%';
+    d.style.fontSize = (1.5+Math.random()*2.5)+'rem';
+    d.style.animationDelay    = (Math.random()*5)+'s';
+    d.style.animationDuration = (6+Math.random()*5)+'s';
+    bg.appendChild(d);
+  }
+})();
+
+// ── Grille personnages ───────────────────────────────────────────────────────
+(function(){
+  const grid = document.getElementById('dogGrid');
+  Object.entries(DOGS).forEach(([id,dog])=>{
+    const btn = document.createElement('button');
+    btn.className = 'dog-card';
+    btn.innerHTML = `
+      <div class="dog-avatar" style="background:${dog.color};box-shadow:0 8px 24px ${dog.color}66">${dog.emoji}</div>
+      <div class="dog-name">${dog.name}</div>
+      <div class="dog-role">${dog.role}</div>`;
+    btn.onclick = ()=>startIncoming(id);
+    grid.appendChild(btn);
+  });
+})();
+
+// ── Sonnerie ─────────────────────────────────────────────────────────────────
+function playRingtone(){
+  try{
+    audioCtx = new(window.AudioContext||window.webkitAudioContext)();
+    let count=0;
+    ringtoneInterval = setInterval(()=>{
+      if(count>=10)return;
+      const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.frequency.setValueAtTime(880,audioCtx.currentTime);
+      osc.frequency.setValueAtTime(660,audioCtx.currentTime+0.18);
+      gain.gain.setValueAtTime(0.25,audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.45);
+      osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime+0.45);
+      count++;
+    },900);
+  }catch(e){}
+}
+function stopRingtone(){
+  if(ringtoneInterval){clearInterval(ringtoneInterval);ringtoneInterval=null;}
+  if(audioCtx){try{audioCtx.close();}catch(e){}audioCtx=null;}
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startIncoming(dogId){
+  currentDog = DOGS[dogId]; history=[];
+  document.getElementById('incName').textContent=currentDog.name;
+  const av=document.getElementById('incAvatar');
+  av.textContent=currentDog.emoji; av.style.background=currentDog.color;
+  av.style.boxShadow=`0 0 60px ${currentDog.color}99`;
+  ['ripple1','ripple2','ripple3'].forEach(id=>document.getElementById(id).style.background=currentDog.color);
+  document.getElementById('incBg').style.background=`linear-gradient(180deg,#0f0f1a,${currentDog.color}22,#0f0f1a)`;
+  showScreen('screen-incoming');
+  playRingtone();
+}
+
+function declineCall(){
+  stopRingtone();
+  showScreen('screen-select');
+}
+
+function acceptCall(){
+  stopRingtone();
+  isSpeaking=false; isBusy=false;
+  const sm=document.getElementById('callAvatarSm');
+  sm.textContent=currentDog.emoji; sm.style.background=currentDog.color;
+  document.getElementById('callName').textContent=currentDog.name;
+  document.getElementById('screen-call').style.background=`linear-gradient(160deg,#0f0f1a,${currentDog.color}20,#0f0f1a)`;
+  document.getElementById('chatArea').innerHTML='';
+  setMicUI('disabled');
+  showScreen('screen-call');
+
+  const greeting=`Wouf ! Allo ? C'est moi ${currentDog.name} ! Comment tu vas ?`;
+  history=[{role:'assistant',content:greeting}];
+  addBubble(greeting,'dog');
+  speakThen(greeting, ()=>{ setMicUI('idle'); setStatus('👆 Maintiens le bouton pour parler'); });
+}
+
+function hangup(){
+  // Arrêt complet propre
+  stopRecognition();
+  cancelSpeech();
+  isSpeaking=false; isBusy=false; history=[];
+  showScreen('screen-select');
+}
+
+// ── Chat ─────────────────────────────────────────────────────────────────────
+function addBubble(text,who){
+  const chat=document.getElementById('chatArea');
+  const b=document.createElement('div');
+  b.className='bubble bubble-'+who;
+  if(who==='dog') b.style.background=currentDog.color;
+  b.textContent=text;
+  chat.appendChild(b);
+  chat.scrollTop=chat.scrollHeight;
+}
+function showTyping(){
+  removeTyping();
+  const chat=document.getElementById('chatArea');
+  const t=document.createElement('div');
+  t.className='typing-bubble'; t.id='typingBubble'; t.style.background=currentDog.color;
+  t.innerHTML='<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+  chat.appendChild(t); chat.scrollTop=chat.scrollHeight;
+}
+function removeTyping(){ const t=document.getElementById('typingBubble'); if(t)t.remove(); }
+
+// ── Voix ─────────────────────────────────────────────────────────────────────
+function cancelSpeech(){
+  if(synth){ try{ synth.cancel(); }catch(e){} }
+}
+
+function speakThen(text, callback){
+  isSpeaking=true;
+  cancelSpeech();
+  if(!synth){
+    // Pas de synthèse — on simule un délai puis on continue
+    setTimeout(()=>{ isSpeaking=false; if(callback)callback(); }, 1200);
+    return;
+  }
+  try{
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang='fr-FR'; utter.pitch=currentDog.pitch; utter.rate=currentDog.rate; utter.volume=1;
+    try{
+      const voices=synth.getVoices().filter(v=>v.lang.startsWith('fr'));
+      if(voices.length) utter.voice=voices[0];
+    }catch(e){}
+    utter.onend  = ()=>{ isSpeaking=false; if(callback)callback(); };
+    utter.onerror= ()=>{ isSpeaking=false; if(callback)callback(); };
+    synth.speak(utter);
+  }catch(e){
+    isSpeaking=false; if(callback)callback();
+  }
+}
+
+// ── IA ───────────────────────────────────────────────────────────────────────
+async function askDog(userText){
+  isBusy=true;
+  setMicUI('disabled');
+  history.push({role:'user',content:userText});
+  showTyping();
+  setStatus('💭 '+currentDog.name+' réfléchit...');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:currentDog.system,
+        messages:history
+      })
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||"Wouf ! Tu peux répéter ?";
+    history.push({role:'assistant',content:reply});
+    removeTyping(); addBubble(reply,'dog');
+    isBusy=false;
+    setStatus('🔊 '+currentDog.name+' parle...');
+    speakThen(reply, ()=>{
+      setMicUI('idle');
+      setStatus('👆 Maintiens le bouton pour parler');
+    });
+  }catch(e){
+    removeTyping();
+    isBusy=false;
+    const f="Wouf ! Je t'entends mal, répète !";
+    addBubble(f,'dog');
+    setStatus('🔊 '+currentDog.name+' parle...');
+    speakThen(f, ()=>{
+      setMicUI('idle');
+      setStatus('👆 Maintiens le bouton pour parler');
+    });
+  }
+}
+
+// ── Micro push-to-talk ───────────────────────────────────────────────────────
+function setStatus(txt){ document.getElementById('micStatus').textContent=txt; }
+
+function setMicUI(state){
+  const btn=document.getElementById('micBtn');
+  const lbl=document.getElementById('micLabel');
+  btn.className='mic-btn '+state;
+  btn.style.background = state==='listening' ? '#ef4444'
+                        : state==='idle'      ? currentDog.color
+                        : '#222';
+  if(state==='listening'){ btn.textContent='🔴'; lbl.textContent='Relâche quand tu as fini'; }
+  else if(state==='idle') { btn.textContent='🎙️'; lbl.textContent='Maintiens pour parler'; }
+  else                    { btn.textContent='🎙️'; lbl.textContent='Attends le chiot...'; }
+}
+
+function startMic(e){
+  e.preventDefault();
+  // Bloqué si le chiot parle ou si l'IA réfléchit
+  if(isSpeaking || isBusy) return;
+  if(!SR){ setStatus('⚠️ Micro non disponible sur ce navigateur'); return; }
+  stopRecognition();
+  setMicUI('listening');
+  setStatus('👂 Je t\'écoute...');
+  try{
+    recognition = new SR();
+    recognition.lang='fr-FR';
+    recognition.continuous=false;
+    recognition.interimResults=false;
+    recognition.onresult=(ev)=>{
+      const text=ev.results[0][0].transcript.trim();
+      if(text.length>0){
+        addBubble(text,'user');
+        setMicUI('disabled');
+        askDog(text);
+      }
+    };
+    recognition.onerror=(ev)=>{
+      if(ev.error==='not-allowed'){
+        setStatus('⚠️ Autorise le micro dans les paramètres du navigateur');
+        setMicUI('disabled');
+      } else {
+        setMicUI('idle');
+        setStatus('👆 Maintiens le bouton pour parler');
+      }
+    };
+    recognition.onend=()=>{
+      // Si on a relâché sans résultat
+      if(!isBusy && !isSpeaking){
+        setMicUI('idle');
+        setStatus('👆 Maintiens le bouton pour parler');
+      }
+    };
+    recognition.start();
+  }catch(e){
+    setStatus('⚠️ Micro non disponible');
+    setMicUI('idle');
+  }
+}
+
+function stopMic(e){
+  e.preventDefault();
+  stopRecognition();
+  // Si pas encore de réponse en cours, repasse en idle
+  if(!isBusy && !isSpeaking){
+    setMicUI('idle');
+    setStatus('👆 Maintiens le bouton pour parler');
+  }
+}
+
+function stopRecognition(){
+  if(recognition){
+    try{ recognition.stop(); }catch(e){}
+    try{ recognition.abort(); }catch(e){}
+    recognition=null;
+  }
+}
+
+// Préchargement voix
+if(synth){ try{ synth.onvoiceschanged=()=>synth.getVoices(); synth.getVoices(); }catch(e){} }
+</script>
+</body>
+</html>
